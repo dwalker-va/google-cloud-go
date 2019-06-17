@@ -15,6 +15,7 @@
 package pubsub
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"strings"
@@ -24,6 +25,7 @@ import (
 	pb "google.golang.org/genproto/googleapis/pubsub/v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"github.com/vendasta/gosdks/logging"
 )
 
 // maxPayload is the maximum number of bytes to devote to actual ids in
@@ -95,6 +97,7 @@ type streamingPullRetryer struct {
 // Does not retry ResourceExhausted. See: https://github.com/GoogleCloudPlatform/google-cloud-go/issues/1166#issuecomment-443744705
 func (r *streamingPullRetryer) Retry(err error) (pause time.Duration, shouldRetry bool) {
 	s, ok := status.FromError(err)
+	logging.Infof(context.Background(), "pubsub error: %s %d", s.Message(), s.Code())
 	if !ok { // call defaultRetryer so that its backoff can be used
 		return r.defaultRetryer.Retry(err)
 	}
